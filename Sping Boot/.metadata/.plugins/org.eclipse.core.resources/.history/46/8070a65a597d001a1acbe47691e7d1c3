@@ -1,0 +1,26 @@
+package Entity;
+
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+
+@Entity
+public class PatientInfo {
+
+	@Id @GeneratedValue
+	private long id;
+	
+	private String patient_id;
+	
+	private String insitute;
+	
+	private String sex;
+	
+	@Convert(converter = AgeConverter.class)
+	private int age;
+	
+	private String modality;
+	
+}
