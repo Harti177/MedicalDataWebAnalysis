@@ -16,14 +16,48 @@ import java.util.List;
 @Entity
 public class PatientInfo {
 
-	@Id @GeneratedValue
+	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
 	@NonNull
 	private String patientId;
 	
 	private String institute;
-	
+
+	public String getPatientId() {
+		return patientId;
+	}
+
+	public String getInstitute() {
+		return institute;
+	}
+
+	public String getSex() {
+		return sex;
+	}
+
+	public String getAge() {
+		AgeConverter ageConverter = new AgeConverter();
+		return ageConverter.convertToDatabaseColumn(age);
+	}
+
+	public String getModality() {
+		return modality;
+	}
+
+	public String getCreatedDate() {
+		DateConverter dateConverter = new DateConverter();
+		return dateConverter.convertToDatabaseColumn(createdDate);
+	}
+
+	public String getThreeDimensionalImage() {
+		return threeDimensionalImage;
+	}
+
+	public String getSnapshot() {
+		return snapshot;
+	}
+
 	private String sex;
 	
 	@Convert(converter = AgeConverter.class)
@@ -48,7 +82,6 @@ public class PatientInfo {
 	}
 
 	public PatientInfo(String patientId, String institute, String sex, String age, String modality, String createdDate, String threeDimensionalImage, String snapshot, List<PatientDetails> patientDetails) {
-		this.id = id;
 		this.patientId = patientId;
 		this.institute = institute;
 		this.sex = sex;
@@ -62,4 +95,7 @@ public class PatientInfo {
 		this.patientDetails = patientDetails;
 	}
 
+	public List<PatientDetails> getPatientDetails() {
+		return patientDetails;
+	}
 }
