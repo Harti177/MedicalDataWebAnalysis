@@ -34,9 +34,13 @@ public class ManualInitializer implements CommandLineRunner {
 //        patientDetails.add(new PatientDetails(1,"Aneurysm","multipleAneurysms","False"));
 //        patientInfoService.createPatientDetails(new PatientInfo("P1","Magdeburg","M","N/A","3DDSA","13/04/2020","C:\\","C:\\",patientDetails));
 
-        patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmType","N/A")); patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmLocation","N/A")); patientDetails.add(new PatientDetails(1,"Ruptured","ruptureStatus","N/A"));	patientDetails.add(new PatientDetails(1,"Aneurysm","multipleAneurysms","N/A"));	patientDetails.add(new PatientDetails(1,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(1,"","Notes","N/A"));
+        patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmType","N/A"));
+        patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmLocation","N/A"));
+        patientDetails.add(new PatientDetails(1,"Ruptured","ruptureStatus","N/A"));
+        patientDetails.add(new PatientDetails(1,"Aneurysm","multipleAneurysms","N/A"));	patientDetails.add(new PatientDetails(1,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(1,"","Notes","N/A"));
         patientInfoService.createPatientDetails(new PatientInfo("BA_20160321","UniversityHospitalMagdeburg","N/A","N/A","3DDSA","13/04/2020","","",patientDetails));
         patientDetails.clear();
+
         patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmType","N/A"));	patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmLocation","N/A"));	patientDetails.add(new PatientDetails(1,"Ruptured","ruptureStatus","N/A"));	patientDetails.add(new PatientDetails(1,"Aneurysm","multipleAneurysms","N/A"));	patientDetails.add(new PatientDetails(1,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(1,"","Notes","N/A"));
         patientInfoService.createPatientDetails(new PatientInfo("BA_20170726","UniversityHospitalMagdeburg","N/A","N/A","3DDSA","10/04/2020","","",patientDetails));
         patientDetails.clear();

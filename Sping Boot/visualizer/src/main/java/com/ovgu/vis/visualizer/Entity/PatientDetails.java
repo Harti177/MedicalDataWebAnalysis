@@ -23,6 +23,12 @@ public class PatientDetails {
 
     private int rowNumber;
 
+    private String category;
+
+    private String key;
+
+    private String value;
+
     public String getCategory() {
         return category;
     }
@@ -38,12 +44,6 @@ public class PatientDetails {
     public long getId() {
         return id;
     }
-
-    private String category;
-
-    private String key;
-
-    private String value;
 
     public PatientDetails() {
     }

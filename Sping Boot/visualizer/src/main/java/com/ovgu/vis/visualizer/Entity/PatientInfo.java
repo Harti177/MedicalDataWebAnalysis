@@ -24,50 +24,16 @@ public class PatientInfo {
 	
 	private String institute;
 
-	public String getPatientId() {
-		return patientId;
-	}
-
-	public String getInstitute() {
-		return institute;
-	}
-
-	public String getSex() {
-		return sex;
-	}
-
-	public String getAge() {
-		AgeConverter ageConverter = new AgeConverter();
-		return ageConverter.convertToDatabaseColumn(age);
-	}
-
-	public String getModality() {
-		return modality;
-	}
-
-	public String getCreatedDate() {
-		DateConverter dateConverter = new DateConverter();
-		return dateConverter.convertToDatabaseColumn(createdDate);
-	}
-
-	public String getThreeDimensionalImage() {
-		return threeDimensionalImage;
-	}
-
-	public String getSnapshot() {
-		return snapshot;
-	}
-
 	private String sex;
 	
 	@Convert(converter = AgeConverter.class)
-	private int age;
+	private String age;
 	
 	private String modality;
 
 	@Convert(converter = DateConverter.class)
 	@JsonFormat(pattern = "dd/mm/yyyy")
-	private Date createdDate;
+	private String createdDate;
 
 	private String threeDimensionalImage;
 
@@ -86,10 +52,10 @@ public class PatientInfo {
 		this.institute = institute;
 		this.sex = sex;
 		AgeConverter ageConverter = new AgeConverter();
-		this.age = ageConverter.convertToEntityAttribute(age);
+		this.age = age;//ageConverter.convertToEntityAttribute(age);
 		this.modality = modality;
 		DateConverter dateConverter = new DateConverter();
-		this.createdDate = dateConverter.convertToEntityAttribute(createdDate);
+		this.createdDate = createdDate;//dateConverter.convertToEntityAttribute(createdDate);
 		this.threeDimensionalImage = threeDimensionalImage;
 		this.snapshot = snapshot;
 		this.patientDetails = patientDetails;
@@ -97,5 +63,37 @@ public class PatientInfo {
 
 	public List<PatientDetails> getPatientDetails() {
 		return patientDetails;
+	}
+
+	public String getPatientId() {
+		return patientId;
+	}
+
+	public String getInstitute() {
+		return institute;
+	}
+
+	public String getSex() {
+		return sex;
+	}
+
+	public String getAge() {
+		return this.age;
+	}
+
+	public String getModality() {
+		return modality;
+	}
+
+	public String getCreatedDate() {
+		return this.createdDate;
+	}
+
+	public String getThreeDimensionalImage() {
+		return threeDimensionalImage;
+	}
+
+	public String getSnapshot() {
+		return snapshot;
 	}
 }

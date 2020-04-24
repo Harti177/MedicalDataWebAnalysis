@@ -2,15 +2,13 @@ package com.ovgu.vis.visualizer.Controller;
 
 import com.ovgu.vis.visualizer.DTO.LegendList;
 import com.ovgu.vis.visualizer.DTO.Patient;
+import com.ovgu.vis.visualizer.DTO.Response;
 import com.ovgu.vis.visualizer.Entity.PatientInfo;
 import com.ovgu.vis.visualizer.Service.LegendDetailsService;
 import com.ovgu.vis.visualizer.Service.PatientInfoService;
 import com.ovgu.vis.visualizer.Service.PatientRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -38,10 +36,10 @@ public class Endpoints {
     @GetMapping("/legendsList")
     public List<LegendList> getAllLegends(){return  legendDetailsService.getAllLegends();}
 
-    @GetMapping("/patientRecords")
-    public List<Patient> getPatientRecords(){
-        List<Patient> patients = patientRecordService.getAllRecords();
-        return patients;
+    @GetMapping("/patientRecords/{pageNumber}")
+    public Response getPatientRecords(@PathVariable int pageNumber, @RequestParam int offset, @RequestParam String sort, @RequestParam String sortBy){
+//        int offset = 10;
+        return patientRecordService.getAllRecords(pageNumber,offset,sort,sortBy);
     }
 
 }
