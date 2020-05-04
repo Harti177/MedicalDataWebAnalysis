@@ -1,4 +1,4 @@
-package com.ovgu.vis.visualizer.AttributeConverter;
+package com.ovgu.vis.visualizer.Entity.AttributeConverter;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;

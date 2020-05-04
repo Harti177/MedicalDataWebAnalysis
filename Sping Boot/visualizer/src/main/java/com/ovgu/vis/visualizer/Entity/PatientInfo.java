@@ -2,12 +2,11 @@ package com.ovgu.vis.visualizer.Entity;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.ovgu.vis.visualizer.AttributeConverter.AgeConverter;
-import com.ovgu.vis.visualizer.AttributeConverter.DateConverter;
+import com.ovgu.vis.visualizer.Entity.AttributeConverter.AgeConverter;
+import com.ovgu.vis.visualizer.Entity.AttributeConverter.DateConverter;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.List;
 
 @Data
