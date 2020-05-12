@@ -15,7 +15,9 @@ import java.util.List;
 @Entity
 public class PatientInfo {
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id")
 	private long id;
 
 	@NonNull
@@ -31,14 +33,14 @@ public class PatientInfo {
 	private String modality;
 
 	@Convert(converter = DateConverter.class)
-	@JsonFormat(pattern = "dd/mm/yyyy")
-	private String createdDate;
+	@JsonFormat(pattern = "dd-mm-yyyy")
+	private String dateOfCreation;
 
 	private String threeDimensionalImage;
 
 	private String snapshot;
 
-	@OneToMany(targetEntity = PatientDetails.class, cascade = CascadeType.ALL)
+	@OneToMany(targetEntity = PatientDetails.class,cascade = CascadeType.ALL)
 	@JoinColumn(name = "patientInfoId", referencedColumnName = "id")
 	private List<PatientDetails> patientDetails;
 
@@ -46,7 +48,7 @@ public class PatientInfo {
 
 	}
 
-	public PatientInfo(String patientId, String institute, String sex, String age, String modality, String createdDate, String threeDimensionalImage, String snapshot, List<PatientDetails> patientDetails) {
+	public PatientInfo(String patientId, String institute, String sex, String age, String modality, String dateOfCreation, String threeDimensionalImage, String snapshot, List<PatientDetails> patientDetails) {
 		this.patientId = patientId;
 		this.institute = institute;
 		this.sex = sex;
@@ -54,7 +56,7 @@ public class PatientInfo {
 		this.age = age;//ageConverter.convertToEntityAttribute(age);
 		this.modality = modality;
 		DateConverter dateConverter = new DateConverter();
-		this.createdDate = createdDate;//dateConverter.convertToEntityAttribute(createdDate);
+		this.dateOfCreation = dateOfCreation;//dateConverter.convertToEntityAttribute(createdDate);
 		this.threeDimensionalImage = threeDimensionalImage;
 		this.snapshot = snapshot;
 		this.patientDetails = patientDetails;
@@ -84,8 +86,8 @@ public class PatientInfo {
 		return modality;
 	}
 
-	public String getCreatedDate() {
-		return this.createdDate;
+	public String getDateOfCreation() {
+		return this.dateOfCreation;
 	}
 
 	public String getThreeDimensionalImage() {

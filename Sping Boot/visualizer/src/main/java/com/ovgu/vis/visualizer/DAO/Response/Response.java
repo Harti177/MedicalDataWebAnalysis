@@ -1,4 +1,4 @@
-package com.ovgu.vis.visualizer.DTO;
+package com.ovgu.vis.visualizer.DAO.Response;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

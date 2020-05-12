@@ -1,28 +1,24 @@
 package com.ovgu.vis.visualizer.Service;
 
-import com.ovgu.vis.visualizer.DTO.FilterRequestBody;
-import com.ovgu.vis.visualizer.DTO.PatientRecord;
-import com.ovgu.vis.visualizer.DTO.Patient;
-import com.ovgu.vis.visualizer.DTO.Response;
+import com.ovgu.vis.visualizer.DAO.Request.Filter;
+import com.ovgu.vis.visualizer.DAO.Request.FilterRequestBody;
+import com.ovgu.vis.visualizer.DAO.Response.PatientRecord;
+import com.ovgu.vis.visualizer.DAO.Response.Patient;
+import com.ovgu.vis.visualizer.DAO.Response.Response;
 import com.ovgu.vis.visualizer.Entity.PatientDetails;
 import com.ovgu.vis.visualizer.Entity.PatientInfo;
 import com.ovgu.vis.visualizer.Repository.LegendDetailsRepository;
 import com.ovgu.vis.visualizer.Repository.PatientInfoRepository;
-import org.jooq.*;
-import org.jooq.impl.DSL;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-
-import javax.print.DocFlavor;
-import java.sql.Connection;
-import java.sql.DriverManager;
+import javax.persistence.EntityManager;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Service
 public class PatientRecordService {
@@ -30,43 +26,150 @@ public class PatientRecordService {
     private LegendDetailsRepository legendDetailsRepository;
     @Autowired
     private PatientInfoRepository patientInfoRepository;
+    @Autowired
+    private EntityManager entityManager;
 
+    private String queryBuilder_globalVariable = "";
 
-    public Response getAllRecords(int pageNumber, int offset, String attribute, String sortBy){
+    private String dynamicQueryBuilder_globalVariable = "";
+
+    private boolean dateInFiltering_globalVariable = false;
+
+    private String startDate_globalVariable = "";
+
+    private String endDate_globalVariable = "";
+
+    /*
+     * Get the patient record with the provided parameters and filter constraints
+     * */
+    public ResponseEntity<Response> getPatients(FilterRequestBody conditions) {
+        dateInFiltering_globalVariable = false;
+        startDate_globalVariable = "";
+        endDate_globalVariable = "";
+        try{
+        Session session = entityManager.unwrap(Session.class);
+
+        //Apply filter to the query
+        //queryBuilder = "select pi.id,pi.patientId,pi.institute,pi.sex,pi.age,pi.modality,pi.dateOfCreation,pi.threeDimensionalImage,pi.snapshot,pd.key,pd.value from PatientInfo pi join PatientDetails pd on pi.id = pd.patientInfoId and ";
+        queryBuilder_globalVariable = "from PatientInfo pi where ";
+
+        //call dynamic query buiilder for conditions specified in filter
+        conditions.getFilters().forEach(filter -> {
+            if(conditions.getFilters().indexOf(filter) != 0)
+                queryBuilder_globalVariable += " and ";
+            if(isPartOfMainQuery(filter.getFieldName())){
+                if(filter.getFieldName().toLowerCase().equals("dateofcreation")){
+                    dateInFiltering_globalVariable = true;
+                    startDate_globalVariable = filter.getStart();
+                    endDate_globalVariable = filter.getEnd();
+                }
+                queryBuilder_globalVariable += HQLSubQueryBuilder(filter, true);
+            }
+            else{           //to be queried from patientDetails
+                String subQuery = HQLSubQueryBuilder(filter,false);
+                queryBuilder_globalVariable += "pi.id in ( " + subQuery + " )";
+            }
+        });
+
+        //pre-query to get the total entry
+        String preQuery = "select count(pi.id) " + queryBuilder_globalVariable;
+        Long totalEntries = dateInFiltering_globalVariable
+                ?
+                (Long) session.createQuery(preQuery).setParameter("startDate",startDate_globalVariable).setParameter("endDate",endDate_globalVariable).getSingleResult()    //if date is contained in query
+                :
+                (Long) session.createQuery(preQuery).getSingleResult();
+
+        //addition of sorting attribute to the query
+        String sortAttribute = conditions.getDisplayOrder().getFieldName().toLowerCase().equals("dateofcreation") ? "dateOfCreation" : conditions.getDisplayOrder().getFieldName().toLowerCase();
+        String sortDirection = conditions.getDisplayOrder().getSortType().toLowerCase().equals("ascending") ? "ASC" : "DESC";
+        queryBuilder_globalVariable += " order by pi." + sortAttribute + " " + sortDirection;
+
+        //offset and limit
+        int pageNumber = conditions.getPageInfo().getPageNumber();
+        int recordsPerPage = conditions.getPageInfo().getNumberOfRecordsPerPage();
+
+        //Main query
+        List patientInfoCollection = dateInFiltering_globalVariable
+                ?
+                session.createQuery(queryBuilder_globalVariable).setFirstResult((pageNumber-1)*recordsPerPage).setMaxResults(recordsPerPage)
+                        .setParameter("startDate",startDate_globalVariable).setParameter("endDate",endDate_globalVariable).list()   //if date is contained in query
+                :
+                session.createQuery(queryBuilder_globalVariable).setFirstResult((pageNumber-1)*recordsPerPage).setMaxResults(recordsPerPage).list();
+
+        //fetching Legend details for each attribute
         List<Patient> patients = new ArrayList<>();
-        Enum sortDirection = sortBy.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Page<PatientInfo> patientInfoList = patientInfoRepository.findAll(PageRequest.of(pageNumber-1,offset, Sort.by(sortBy.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, attribute)));
-        patientInfoList.forEach(patientInfo -> {
+        patientInfoCollection.forEach(patientInfo -> {
             List<PatientRecord> patientDetailsInRecords = new ArrayList<>();
-            List<PatientDetails> patientDetails = patientInfo.getPatientDetails();
+            List<PatientDetails> patientDetails = ((PatientInfo)patientInfo).getPatientDetails();
             patientDetails.forEach(patientDetail -> {
                 patientDetailsInRecords.add(new PatientRecord(patientDetail.getKey(), patientDetail.getValue(), legendDetailsRepository.getJoinRecords(patientDetail.getKey(), patientDetail.getValue())));
             });
-            patients.add(new Patient(patientInfo.getPatientId(),patientInfo.getInstitute(),patientInfo.getSex(),patientInfo.getAge(),patientInfo.getModality(),
-                    patientInfo.getCreatedDate(),patientInfo.getThreeDimensionalImage(),patientInfo.getSnapshot(),patientDetailsInRecords));
+            patients.add(new Patient(((PatientInfo)patientInfo).getPatientId(),((PatientInfo)patientInfo).getInstitute(),((PatientInfo)patientInfo).getSex(),((PatientInfo)patientInfo).getAge(),((PatientInfo)patientInfo).getModality(),
+                    ((PatientInfo)patientInfo).getDateOfCreation(),((PatientInfo)patientInfo).getThreeDimensionalImage(),((PatientInfo)patientInfo).getSnapshot(),patientDetailsInRecords));
         });
-        return new Response(patientInfoList.getTotalElements(), patientInfoList.getPageable().getPageNumber()+1, patientInfoList.getTotalPages() , offset, patients);
+
+        return new ResponseEntity<>(new Response(totalEntries,conditions.getPageInfo().getPageNumber(), (int) Math.ceil((double)totalEntries/conditions.getPageInfo().getNumberOfRecordsPerPage()),
+                conditions.getPageInfo().getNumberOfRecordsPerPage(),patients), HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
+        }
     }
 
     /*
-    * Get the patient record with the provided parameters and filter constraints
+    * To identify whether to query patient info or patient details
     * */
-    public String getPatients(List<FilterRequestBody> conditions){
-        String JDBC_URL = "jdbc:h2:file:./testDb";
-        String userName = "sa";
-        String password = "";
-        try(Connection connection = DriverManager.getConnection(JDBC_URL,userName,password)) {
-            DSLContext dslContext = DSL.using(connection);
-            Result<Record> records = dslContext.select().from(com.ovgu.vis.visualizer.jooq.tables.PatientInfo.PATIENT_INFO).fetch();
-            System.out.println("ji");
-//            SelectQuery query = dslContext.select().from(PATIENTINFO)
+    private boolean isPartOfMainQuery(String fieldName){
+        return  (fieldName.toLowerCase().equals("age") || fieldName.toLowerCase().equals("institute") || fieldName.toLowerCase().equals("dateofcreation") ||
+                fieldName.toLowerCase().equals("modality" ) || fieldName.toLowerCase().equals("sex"));
+    }
 
-//            SELECT pi.patient_id, pi.institute,pi.sex,pi.age, pi.modality, pi.created_date,pd.Category,pd.key,pd.row_number,pd.value,pd.patient_info_id,ld.legend FROM
-//            PATIENT_INFO pi join PATIENT_DETAILS pd left join LEGEND_DETAILS ld on ld.key = pd.key and ld.value = pd.value where pi.id = pd.patient_info_id
+    /*
+    * To fetch the operator type
+    * */
+    private String getOperatorType(String type){
+        switch (type.toLowerCase()){
+            case "range":
+                return "in";
+            case "between":
+                return "between";
+            default:
+                return "";
         }
-        catch(Exception e){
-            e.printStackTrace();
+    }
+
+    /*
+    * Dynamic Query builder
+    * */
+    private String HQLSubQueryBuilder(Filter condition, boolean mainQueryPart){
+        String operator = getOperatorType(condition.getType());
+        if(mainQueryPart){
+            String attribute = condition.getFieldName().toLowerCase().equals("dateofcreation") ? "dateOfCreation" : condition.getFieldName().toLowerCase();
+            dynamicQueryBuilder_globalVariable = "pi." + attribute + " " + getOperatorType(condition.getType());
         }
-        return "";
+        else {
+            dynamicQueryBuilder_globalVariable = "select pd.patientInfoId from PatientDetails pd where pd.key = '" + condition.getFieldName() +"' and pd.value "+ operator;
+        }
+
+        if(operator == "in") {
+            dynamicQueryBuilder_globalVariable += " (";
+            List<String> values = condition.getValues();
+            values.forEach(value -> {
+                dynamicQueryBuilder_globalVariable += values.indexOf(value) == 0 ? "'" + value + "'" : "," + "'" + value + "'";
+            });
+        }
+        else if(operator == "between"){
+            if(condition.getFieldName().toLowerCase().equals("dateofcreation")){
+                dynamicQueryBuilder_globalVariable += " :startDate and :endDate";
+            }
+            else{
+                dynamicQueryBuilder_globalVariable += " '" + condition.getStart() + "' and '" + condition.getEnd() + "'";
+            }
+        }
+        if(!mainQueryPart){
+            dynamicQueryBuilder_globalVariable += ")";
+        }
+        return dynamicQueryBuilder_globalVariable;
     }
 }
+

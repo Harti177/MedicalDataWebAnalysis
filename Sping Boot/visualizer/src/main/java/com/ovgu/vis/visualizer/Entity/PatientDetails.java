@@ -17,9 +17,7 @@ public class PatientDetails {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    public int getRowNumber() {
-        return rowNumber;
-    }
+    private Long patientInfoId;
 
     private int rowNumber;
 
@@ -28,6 +26,10 @@ public class PatientDetails {
     private String key;
 
     private String value;
+
+    public int getRowNumber() {
+        return rowNumber;
+    }
 
     public String getCategory() {
         return category;
@@ -54,4 +56,5 @@ public class PatientDetails {
         this.key = key;
         this.value = value;
     }
+
 }
