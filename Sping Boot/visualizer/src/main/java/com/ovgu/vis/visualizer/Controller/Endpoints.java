@@ -48,5 +48,18 @@ public class Endpoints {
     public ResponseEntity<Response> getPatients(@RequestBody FilterRequestBody filterConditions) {
         return patientRecordService.getPatients(filterConditions);
     }
+
+    @PutMapping("/updateLegend")
+    @CrossOrigin("http://localhost:3000")
+    public void updateLegend(@RequestParam String key,@RequestParam String value, @RequestParam String legendName){
+        legendDetailsService.updateLegend(key,value,legendName);
+    }
+
+    @DeleteMapping("/deleteLegend")
+    @CrossOrigin("http://localhost:3000")
+    public void deleteLegend(@RequestParam String key,@RequestParam String value){
+        legendDetailsService.deleteLegend(key,value);
+    }
+
 }
 

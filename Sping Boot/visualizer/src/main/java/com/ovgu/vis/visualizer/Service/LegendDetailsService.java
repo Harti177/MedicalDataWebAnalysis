@@ -26,4 +26,12 @@ public class LegendDetailsService {
         uniqueKeys.forEach(key -> legendList.add(new LegendList(key,legendDetailsRepository.findLegendsByKey(key))));
         return legendList;
     }
+
+    public void updateLegend(String key, String value, String legend){
+        legendDetailsRepository.updateLegendWithKeyValue(key,value,legend);
+    }
+
+    public void deleteLegend(String key, String value){
+        legendDetailsRepository.deleteLegend(key,value);
+    }
 }
