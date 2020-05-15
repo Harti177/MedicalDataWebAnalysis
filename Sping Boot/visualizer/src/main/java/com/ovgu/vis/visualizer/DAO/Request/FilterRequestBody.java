@@ -7,6 +7,7 @@ import java.util.List;
 @AllArgsConstructor
 public class FilterRequestBody {
 
+
     private List<Filter> filters;
 
     private DisplayOrder displayOrder;

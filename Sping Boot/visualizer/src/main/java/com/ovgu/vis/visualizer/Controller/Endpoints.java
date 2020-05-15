@@ -2,12 +2,13 @@ package com.ovgu.vis.visualizer.Controller;
 
 import com.ovgu.vis.visualizer.DAO.Request.FilterRequestBody;
 import com.ovgu.vis.visualizer.DTO.LegendList;
-import com.ovgu.vis.visualizer.DAO.Response.Response;
+import com.ovgu.vis.visualizer.Entity.LegendDetails;
+import com.ovgu.vis.visualizer.ServiceInterface.LegendDetailsService;
+import com.ovgu.vis.visualizer.ServiceInterface.PatientInfoService;
+import com.ovgu.vis.visualizer.ServiceInterface.PatientRecordService;
 import com.ovgu.vis.visualizer.Entity.PatientInfo;
-import com.ovgu.vis.visualizer.Service.LegendDetailsService;
-import com.ovgu.vis.visualizer.Service.PatientInfoService;
-import com.ovgu.vis.visualizer.Service.PatientRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,10 +18,15 @@ import java.util.List;
 public class Endpoints {
 
     @Autowired
+    @Qualifier("patientInfo")
     private PatientInfoService patientInfoService;
+
     @Autowired
+    @Qualifier("legendDetails")
     private LegendDetailsService legendDetailsService;
+
     @Autowired
+    @Qualifier("patientRecords")
     private PatientRecordService patientRecordService;
 
 
@@ -45,7 +51,7 @@ public class Endpoints {
 
     @PostMapping("/patientsRecords")
     @CrossOrigin("http://localhost:3000")
-    public ResponseEntity<Response> getPatients(@RequestBody FilterRequestBody filterConditions) {
+    public ResponseEntity getPatients(@RequestBody(required = false) FilterRequestBody filterConditions) {
         return patientRecordService.getPatients(filterConditions);
     }
 
@@ -61,5 +67,10 @@ public class Endpoints {
         legendDetailsService.deleteLegend(key,value);
     }
 
+    @PostMapping("/createLegend")
+    @CrossOrigin("http://localhost:3000")
+    public void createLegend(@RequestBody LegendDetails legendDetails){
+        legendDetailsService.createLegends(legendDetails);
+    }
 }
 
