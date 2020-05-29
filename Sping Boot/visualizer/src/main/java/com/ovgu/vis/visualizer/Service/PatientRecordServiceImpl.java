@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @Qualifier("patientRecords")
@@ -49,6 +51,7 @@ class PatientRecordServiceImpl implements PatientRecordService {
         dateInFiltering_globalVariable = false;
         startDate_globalVariable = "";
         endDate_globalVariable = "";
+        AtomicReference<Boolean> subQueryFixedStringAdded = new AtomicReference<>(false);
         try{
             Session session = entityManager.unwrap(Session.class);
 
@@ -60,7 +63,8 @@ class PatientRecordServiceImpl implements PatientRecordService {
                 conditions.getFilters().forEach(filter -> {
                     if(conditions.getFilters().indexOf(filter) != 0)
                         queryBuilder_globalVariable += " and ";
-                    if(isPartOfMainQuery(filter.getFieldName())){
+                    Boolean isPartOfMainQuery = isPartOfMainQuery(filter.getFieldName());
+                    if(isPartOfMainQuery){
                         if(filter.getFieldName().toLowerCase().equals("dateofcreation")){
                             dateInFiltering_globalVariable = true;
                             startDate_globalVariable = filter.getStart();
@@ -69,10 +73,15 @@ class PatientRecordServiceImpl implements PatientRecordService {
                         queryBuilder_globalVariable += HQLSubQueryBuilder(filter, true);
                     }
                     else{           //to be queried from patientDetails
+                        if(!subQueryFixedStringAdded.get()){
+                           queryBuilder_globalVariable += "pi.patientId in ( select pd.patientId from PatientDetails pd where ";
+                           subQueryFixedStringAdded.set(true);
+                        }
                         String subQuery = HQLSubQueryBuilder(filter,false);
-                        queryBuilder_globalVariable += "pi.id in ( " + subQuery + " )";
+                        queryBuilder_globalVariable += "(" + subQuery + " )";
                     }
                 });
+                queryBuilder_globalVariable+= ")";
             }
             else {
                 queryBuilder_globalVariable = "from PatientInfo pi";
@@ -107,13 +116,13 @@ class PatientRecordServiceImpl implements PatientRecordService {
             //fetching Legend details for each attribute
             List<Patient> patients = new ArrayList<>();
             patientInfoCollection.forEach(patientInfo -> {
-                List<PatientRecord> patientDetailsInRecords = new ArrayList<>();
-                List<PatientDetails> patientDetails = ((PatientInfo)patientInfo).getPatientDetails();
-                patientDetails.forEach(patientDetail -> {
-                    patientDetailsInRecords.add(new PatientRecord(patientDetail.getKey(), patientDetail.getValue(), legendDetailsRepository.getJoinRecords(patientDetail.getKey(), patientDetail.getValue())));
-                });
-                patients.add(new Patient(((PatientInfo)patientInfo).getPatientId(),((PatientInfo)patientInfo).getInstitute(),((PatientInfo)patientInfo).getSex(),((PatientInfo)patientInfo).getAge(),((PatientInfo)patientInfo).getModality(),
-                        ((PatientInfo)patientInfo).getDateOfCreation(),((PatientInfo)patientInfo).getThreeDimensionalImage(),((PatientInfo)patientInfo).getSnapshot(),patientDetailsInRecords));
+                Boolean rootExists = patientInfoAlreadyExist(patients,(PatientInfo) patientInfo);
+                if(!rootExists){
+                    List<PatientRecord> patientDetailsInRecords = decryptLegendDetails(((PatientInfo)patientInfo).getPatientDetails());
+                    patients.add(new Patient(((PatientInfo)patientInfo).getPatientId(),((PatientInfo)patientInfo).getInstitute(),
+                            ((PatientInfo)patientInfo).getSex(),((PatientInfo)patientInfo).getAge(),((PatientInfo)patientInfo).getModality(), ((PatientInfo)patientInfo).getDateOfCreation(),
+                            ((PatientInfo)patientInfo).getThreeDimensionalImage(),((PatientInfo)patientInfo).getSnapshot(),patientDetailsInRecords));
+                }
             });
 
             return ResponseEntity.status(HttpStatus.OK).body(new Response(totalEntries,conditions.getPageInfo().getPageNumber(), (int) Math.ceil((double)totalEntries/conditions.getPageInfo().getNumberOfRecordsPerPage()),
@@ -122,6 +131,32 @@ class PatientRecordServiceImpl implements PatientRecordService {
         catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getCause().getMessage());
         }
+    }
+
+    /*
+    * Fetch the value from legends table for the given patient details value
+    * */
+    private List<PatientRecord> decryptLegendDetails(List<PatientDetails> patientDetails){
+        List<PatientRecord> patientDetailsInRecords = new ArrayList<>();
+        patientDetails.forEach(patientDetail -> {
+            patientDetailsInRecords.add(new PatientRecord(patientDetail.getKey(), patientDetail.getValue(), legendDetailsRepository.getJoinRecords(patientDetail.getKey(), patientDetail.getValue())));
+        });
+        return patientDetailsInRecords;
+    }
+
+    /*
+    * If patient info already exists append the details to the existing patient info
+    * */
+    private boolean patientInfoAlreadyExist (List<Patient> patients, PatientInfo currentRoot){
+        AtomicBoolean exists = new AtomicBoolean(false);
+        patients.forEach(patient -> {
+            if(patient.getPatientId().equals(currentRoot.getPatientId())){
+                List<PatientRecord> patientDetailsInRecords = decryptLegendDetails(((PatientInfo)currentRoot).getPatientDetails());
+                patient.appendAdditionalDetails(patientDetailsInRecords);
+                exists.set(true);
+            }
+        });
+        return exists.get();
     }
 
     /*
@@ -156,7 +191,7 @@ class PatientRecordServiceImpl implements PatientRecordService {
             dynamicQueryBuilder_globalVariable = "pi." + attribute + " " + getOperatorType(condition.getType());
         }
         else {
-            dynamicQueryBuilder_globalVariable = "select pd.patientInfoId from PatientDetails pd where pd.key = '" + condition.getFieldName() +"' and pd.value "+ operator;
+            dynamicQueryBuilder_globalVariable = "(pd.patientId,pd.patientInfoId) in (select patientId,patientInfoId from PatientDetails where key = '" + condition.getFieldName() +"' and value "+ operator;
         }
 
         if(operator == "in") {
@@ -175,7 +210,7 @@ class PatientRecordServiceImpl implements PatientRecordService {
             }
         }
         if(!mainQueryPart){
-            dynamicQueryBuilder_globalVariable += ")";
+            dynamicQueryBuilder_globalVariable += "))";
         }
         return dynamicQueryBuilder_globalVariable;
     }

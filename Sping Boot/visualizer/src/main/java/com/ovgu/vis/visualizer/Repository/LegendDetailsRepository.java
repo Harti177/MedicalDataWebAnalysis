@@ -5,6 +5,7 @@ import com.ovgu.vis.visualizer.Entity.LegendDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -19,7 +20,7 @@ public interface LegendDetailsRepository extends JpaRepository<LegendDetails,Int
     public List<LegendCodeValuePair> findLegendsByKey(String key);
 
     @Query("Select legend from LegendDetails where key = :key and value = :value")
-    public String getJoinRecords(String key, String value);
+    public String getJoinRecords(@Param("key") String myKey, String value);
 
     @Transactional
     @Modifying

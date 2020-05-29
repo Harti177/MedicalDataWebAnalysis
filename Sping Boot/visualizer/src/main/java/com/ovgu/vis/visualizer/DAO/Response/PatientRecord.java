@@ -17,4 +17,6 @@ public class PatientRecord {
             this.value = value;
 //            this.legend = legend;
     }
+
+    public PatientRecord() { }
 }

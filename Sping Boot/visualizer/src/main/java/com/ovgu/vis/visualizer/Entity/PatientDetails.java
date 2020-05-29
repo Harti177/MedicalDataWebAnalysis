@@ -19,17 +19,13 @@ public class PatientDetails {
 
     private Long patientInfoId;
 
-    private int rowNumber;
+    private String patientId;
 
     private String category;
 
     private String key;
 
     private String value;
-
-    public int getRowNumber() {
-        return rowNumber;
-    }
 
     public String getCategory() {
         return category;
@@ -50,8 +46,8 @@ public class PatientDetails {
     public PatientDetails() {
     }
 
-    public PatientDetails(int rowNumber, String category, String key, String value) {
-        this.rowNumber = rowNumber;
+    public PatientDetails(String patientId,String category, String key, String value) {
+        this.patientId = patientId;
         this.category = category;
         this.key = key;
         this.value = value;

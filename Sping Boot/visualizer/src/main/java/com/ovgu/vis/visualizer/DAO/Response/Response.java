@@ -9,7 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Response {
 
-    private long totalEntriesFound;
+    private long totalCasesFound;
 
     private int currentPage;
 
@@ -20,7 +20,7 @@ public class Response {
     List<Patient> data;
 
     public Response(long found, int currentPage, int totalPage, int offset, List<Patient> patients) {
-        this.totalEntriesFound = found;
+        this.totalCasesFound = found;
         this.currentPage = currentPage;
         this.totalPage = totalPage;
         this.offset = offset;

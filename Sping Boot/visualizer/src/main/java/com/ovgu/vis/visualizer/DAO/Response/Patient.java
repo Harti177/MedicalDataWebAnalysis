@@ -2,6 +2,7 @@ package com.ovgu.vis.visualizer.DAO.Response;
 
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -24,8 +25,12 @@ public class Patient {
 
     private String snapshot;
 
-    private List<PatientRecord> patientRecords;
+    private List<List<PatientRecord>> patientRecords = new ArrayList<>();
 
+
+    public String getPatientId() {
+        return patientId;
+    }
 
     public Patient(String patientId, String institute, String sex, String age, String modality, String createdDate, String threeDimensionalImage, String snapshot, List<PatientRecord> patientRecords) {
         this.patientId = patientId;
@@ -36,6 +41,10 @@ public class Patient {
         this.createdDate = createdDate;
         this.threeDimensionalImage = threeDimensionalImage;
         this.snapshot = snapshot;
-        this.patientRecords = patientRecords;
+        this.patientRecords.add(patientRecords);
+    }
+
+    public void appendAdditionalDetails(List<PatientRecord> currentDetails){
+        this.patientRecords.add(currentDetails);
     }
 }

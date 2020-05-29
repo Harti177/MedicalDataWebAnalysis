@@ -3,9 +3,10 @@
 //import com.ovgu.vis.visualizer.Entity.LegendDetails;
 //import com.ovgu.vis.visualizer.Entity.PatientDetails;
 //import com.ovgu.vis.visualizer.Entity.PatientInfo;
-//import com.ovgu.vis.visualizer.Service.LegendDetailsService;
-//import com.ovgu.vis.visualizer.Service.PatientInfoService;
+//import com.ovgu.vis.visualizer.ServiceInterface.LegendDetailsService;
+//import com.ovgu.vis.visualizer.ServiceInterface.PatientInfoService;
 //import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.beans.factory.annotation.Qualifier;
 //import org.springframework.boot.CommandLineRunner;
 //import org.springframework.stereotype.Component;
 //
@@ -16,49 +17,103 @@
 //public class ManualInitializer implements CommandLineRunner {
 //
 //    @Autowired
-//    PatientInfoService patientInfoService;
+//    @Qualifier("patientInfo")
+//    private PatientInfoService patientInfoService;
 //
 //    @Autowired
-//    LegendDetailsService legendDetailsService;
+//    @Qualifier("legendDetails")
+//    private LegendDetailsService legendDetailsService;
 //
 //    @Override
 //    public void run(String... args) throws Exception {
 //        List<PatientDetails> patientDetails = new ArrayList<>();
-//        patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmType","N/A"));
-//        patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmLocation","N/A"));
-//        patientDetails.add(new PatientDetails(1,"Ruptured","ruptureStatus","N/A"));
-//        patientDetails.add(new PatientDetails(1,"Aneurysm","multipleAneurysms","N/A"));	patientDetails.add(new PatientDetails(1,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(1,"","Notes","N/A"));
+//        patientDetails.add(new PatientDetails("BA_20160321","Aneurysm","aneurysmType","N/A"));
+//        patientDetails.add(new PatientDetails("BA_20160321","Aneurysm","aneurysmLocation","N/A"));
+//        patientDetails.add(new PatientDetails("BA_20160321","Ruptured","ruptureStatus","N/A"));
+//        patientDetails.add(new PatientDetails("BA_20160321","Aneurysm","multipleAneurysms","N/A"));
+//        patientDetails.add(new PatientDetails("BA_20160321","","MedicalHistory","N/A"));
+//        patientDetails.add(new PatientDetails("BA_20160321","","Notes","N/A"));
 //        patientInfoService.createPatientDetails(new PatientInfo("BA_20160321","UniversityHospitalMagdeburg","N/A","N/A","3DDSA","13-04-2020","","",patientDetails));
 //        patientDetails.clear();
 //
-//        patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmType","N/A"));	patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmLocation","N/A"));	patientDetails.add(new PatientDetails(1,"Ruptured","ruptureStatus","N/A"));	patientDetails.add(new PatientDetails(1,"Aneurysm","multipleAneurysms","N/A"));	patientDetails.add(new PatientDetails(1,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(1,"","Notes","N/A"));
+//        patientDetails.add(new PatientDetails("BA_20170726","Aneurysm","aneurysmType","N/A"));
+//        patientDetails.add(new PatientDetails("BA_20170726","Aneurysm","aneurysmLocation","N/A"));
+//        patientDetails.add(new PatientDetails("BA_20170726","Ruptured","ruptureStatus","N/A"));
+//        patientDetails.add(new PatientDetails("BA_20170726","Aneurysm","multipleAneurysms","N/A"));
+//        patientDetails.add(new PatientDetails("BA_20170726","","MedicalHistory","N/A"));
+//        patientDetails.add(new PatientDetails("BA_20170726","","Notes","N/A"));
 //        patientInfoService.createPatientDetails(new PatientInfo("BA_20170726","UniversityHospitalMagdeburg","N/A","N/A","3DDSA","10-04-2020","","",patientDetails));
 //        patientDetails.clear();
-//        patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmType","N/A"));	patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmLocation","4"));	patientDetails.add(new PatientDetails(1,"Ruptured","ruptureStatus","R"));	patientDetails.add(new PatientDetails(1,"Aneurysm","multipleAneurysms","False"));	patientDetails.add(new PatientDetails(1,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(1,"","Notes","N/A"));
+//        patientDetails.add(new PatientDetails("BC_20150912","Aneurysm","aneurysmType","N/A"));
+//        patientDetails.add(new PatientDetails("BC_20150912","Aneurysm","aneurysmLocation","4"));
+//        patientDetails.add(new PatientDetails("BC_20150912","Ruptured","ruptureStatus","R"));
+//        patientDetails.add(new PatientDetails("BC_20150912","Aneurysm","multipleAneurysms","False"));
+//        patientDetails.add(new PatientDetails("BC_20150912","","MedicalHistory","N/A"));
+//        patientDetails.add(new PatientDetails("BC_20150912","","Notes","N/A"));
 //        patientInfoService.createPatientDetails(new PatientInfo("BC_20150912","UniversityHospitalMagdeburg","M","36","3DDSA","13-03-2020","","",patientDetails));
 //        patientDetails.clear();
-//        patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmType","N/A"));	patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmLocation","4"));	patientDetails.add(new PatientDetails(1,"Ruptured","ruptureStatus","U"));	patientDetails.add(new PatientDetails(1,"Aneurysm","multipleAneurysms","False"));	patientDetails.add(new PatientDetails(1,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(1,"","Notes","N/A"));
+//        patientDetails.add(new PatientDetails("BC_20160202","Aneurysm","aneurysmType","N/A"));
+//        patientDetails.add(new PatientDetails("BC_20160202","Aneurysm","aneurysmLocation","4"));
+//        patientDetails.add(new PatientDetails("BC_20160202","Ruptured","ruptureStatus","U"));
+//        patientDetails.add(new PatientDetails("BC_20160202","Aneurysm","multipleAneurysms","False"));
+//        patientDetails.add(new PatientDetails("BC_20160202","","MedicalHistory","N/A"));
+//        patientDetails.add(new PatientDetails("BC_20160202","","Notes","N/A"));
 //        patientInfoService.createPatientDetails(new PatientInfo("BC_20160202","UniversityHospitalMagdeburg","F","68","N/A","10-03-2020","","",patientDetails));
 //        patientDetails.clear();
-//        patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmType","N/A"));	patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmLocation","4"));	patientDetails.add(new PatientDetails(1,"Ruptured","ruptureStatus","R"));	patientDetails.add(new PatientDetails(1,"Aneurysm","multipleAneurysms","False"));	patientDetails.add(new PatientDetails(1,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(1,"","Notes","N/A"));
+//        patientDetails.add(new PatientDetails("BL_20150731","Aneurysm","aneurysmType","N/A"));
+//        patientDetails.add(new PatientDetails("BL_20150731","Aneurysm","aneurysmLocation","4"));
+//        patientDetails.add(new PatientDetails("BL_20150731","Ruptured","ruptureStatus","R"));
+//        patientDetails.add(new PatientDetails("BL_20150731","Aneurysm","multipleAneurysms","False"));
+//        patientDetails.add(new PatientDetails("BL_20150731","","MedicalHistory","N/A"));
+//        patientDetails.add(new PatientDetails("BL_20150731","","Notes","N/A"));
 //        patientInfoService.createPatientDetails(new PatientInfo("BL_20150731","UniversityHospitalMagdeburg","M","86","3DDSA","13-02-2020","","",patientDetails));
 //        patientDetails.clear();
-//        patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmType","N/A"));	patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmLocation","6"));	patientDetails.add(new PatientDetails(1,"Ruptured","ruptureStatus","R"));	patientDetails.add(new PatientDetails(1,"Aneurysm","multipleAneurysms","True"));	patientDetails.add(new PatientDetails(1,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(1,"","Notes","N/A"));
+//        patientDetails.add(new PatientDetails("BM_20170828","Aneurysm","aneurysmType","N/A"));
+//        patientDetails.add(new PatientDetails("BM_20170828","Aneurysm","aneurysmLocation","6"));
+//        patientDetails.add(new PatientDetails("BM_20170828","Ruptured","ruptureStatus","R"));
+//        patientDetails.add(new PatientDetails("BM_20170828","Aneurysm","multipleAneurysms","True"));
+//        patientDetails.add(new PatientDetails("BM_20170828","","MedicalHistory","N/A"));
+//        patientDetails.add(new PatientDetails("BM_20170828","","Notes","N/A"));
 //        patientInfoService.createPatientDetails(new PatientInfo("BM_20170828","UniversityHospitalMagdeburg","F","51","3DDSA","10-02-2020","","",patientDetails));
 //        patientDetails.clear();
-//        patientDetails.add(new PatientDetails(2,"Aneurysm","aneurysmType","N/A"));	patientDetails.add(new PatientDetails(2,"Aneurysm","aneurysmLocation","4"));	patientDetails.add(new PatientDetails(2,"Ruptured","ruptureStatus","U"));	patientDetails.add(new PatientDetails(2,"Aneurysm","multipleAneurysms","Ture"));	patientDetails.add(new PatientDetails(2,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(2,"","Notes","N/A"));
-//        patientInfoService.createPatientDetails(new PatientInfo("BM_20170828_1","UniversityHospitalMagdeburg","F","51","3DDSA","13-01-2020","","",patientDetails));
+//        patientDetails.add(new PatientDetails("BM_20170828","Aneurysm","aneurysmType","N/A"));
+//        patientDetails.add(new PatientDetails("BM_20170828","Aneurysm","aneurysmLocation","4"));
+//        patientDetails.add(new PatientDetails("BM_20170828","Ruptured","ruptureStatus","U"));
+//        patientDetails.add(new PatientDetails("BM_20170828","Aneurysm","multipleAneurysms","Ture"));
+//        patientDetails.add(new PatientDetails("BM_20170828","","MedicalHistory","N/A"));
+//        patientDetails.add(new PatientDetails("BM_20170828","","Notes","N/A"));
+//        patientInfoService.createPatientDetails(new PatientInfo("BM_20170828","UniversityHospitalMagdeburg","F","51","3DDSA","13-01-2020","","",patientDetails));
 //        patientDetails.clear();
-//        patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmType","N/A"));	patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmLocation","4"));	patientDetails.add(new PatientDetails(1,"Ruptured","ruptureStatus","R"));	patientDetails.add(new PatientDetails(1,"Aneurysm","multipleAneurysms","False"));	patientDetails.add(new PatientDetails(1,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(1,"","Notes","N/A"));
+//        patientDetails.add(new PatientDetails("BN_20150317","Aneurysm","aneurysmType","N/A"));
+//        patientDetails.add(new PatientDetails("BN_20150317","Aneurysm","aneurysmLocation","4"));
+//        patientDetails.add(new PatientDetails("BN_20150317","Ruptured","ruptureStatus","R"));
+//        patientDetails.add(new PatientDetails("BN_20150317","Aneurysm","multipleAneurysms","False"));
+//        patientDetails.add(new PatientDetails("BN_20150317","","MedicalHistory","N/A"));
+//        patientDetails.add(new PatientDetails("BN_20150317","","Notes","N/A"));
 //        patientInfoService.createPatientDetails(new PatientInfo("BN_20150317","UniversityHospitalMagdeburg","M","53","N/A","10-01-2020","","",patientDetails));
 //        patientDetails.clear();
-//        patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmType","N/A"));	patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmLocation","2"));	patientDetails.add(new PatientDetails(1,"Ruptured","ruptureStatus","R"));	patientDetails.add(new PatientDetails(1,"Aneurysm","multipleAneurysms","True"));	patientDetails.add(new PatientDetails(1,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(1,"","Notes","N/A"));
-//        patientInfoService.createPatientDetails(new PatientInfo("BP_20161021_0","UniversityHospitalMagdeburg","F","55","N/A","13-11-2019","","",patientDetails));
+//        patientDetails.add(new PatientDetails("BP_20161021","Aneurysm","aneurysmType","N/A"));
+//        patientDetails.add(new PatientDetails("BP_20161021","Aneurysm","aneurysmLocation","2"));
+//        patientDetails.add(new PatientDetails("BP_20161021","Ruptured","ruptureStatus","R"));
+//        patientDetails.add(new PatientDetails("BP_20161021","Aneurysm","multipleAneurysms","True"));
+//        patientDetails.add(new PatientDetails("BP_20161021","","MedicalHistory","N/A"));
+//        patientDetails.add(new PatientDetails("BP_20161021","","Notes","N/A"));
+//        patientInfoService.createPatientDetails(new PatientInfo("BP_20161021","UniversityHospitalMagdeburg","F","55","N/A","13-11-2019","","",patientDetails));
 //        patientDetails.clear();
-//        patientDetails.add(new PatientDetails(2,"Aneurysm","aneurysmType","N/A"));	patientDetails.add(new PatientDetails(2,"Aneurysm","aneurysmLocation","2"));	patientDetails.add(new PatientDetails(2,"Ruptured","ruptureStatus","U"));	patientDetails.add(new PatientDetails(2,"Aneurysm","multipleAneurysms","Ture"));	patientDetails.add(new PatientDetails(2,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(2,"","Notes","N/A"));
-//        patientInfoService.createPatientDetails(new PatientInfo("BP_20161021_1","UniversityHospitalMagdeburg","F","55","N/A","10-11-2019","","",patientDetails));
+//        patientDetails.add(new PatientDetails("BP_20161021","Aneurysm","aneurysmType","N/A"));
+//        patientDetails.add(new PatientDetails("BP_20161021","Aneurysm","aneurysmLocation","2"));
+//        patientDetails.add(new PatientDetails("BP_20161021","Ruptured","ruptureStatus","U"));
+//        patientDetails.add(new PatientDetails("BP_20161021","Aneurysm","multipleAneurysms","Ture"));
+//        patientDetails.add(new PatientDetails("BP_20161021","","MedicalHistory","N/A"));
+//        patientDetails.add(new PatientDetails("BP_20161021","","Notes","N/A"));
+//        patientInfoService.createPatientDetails(new PatientInfo("BP_20161021","UniversityHospitalMagdeburg","F","55","N/A","10-11-2019","","",patientDetails));
 //        patientDetails.clear();
-//        patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmType","N/A"));	patientDetails.add(new PatientDetails(1,"Aneurysm","aneurysmLocation","4"));	patientDetails.add(new PatientDetails(1,"Ruptured","ruptureStatus","R"));	patientDetails.add(new PatientDetails(1,"Aneurysm","multipleAneurysms","False"));	patientDetails.add(new PatientDetails(1,"","MedicalHistory","N/A"));	patientDetails.add(new PatientDetails(1,"","Notes","N/A"));
+//        patientDetails.add(new PatientDetails("BU_20150801","Aneurysm","aneurysmType","N/A"));
+//        patientDetails.add(new PatientDetails("BU_20150801","Aneurysm","aneurysmLocation","4"));
+//        patientDetails.add(new PatientDetails("BU_20150801","Ruptured","ruptureStatus","R"));
+//        patientDetails.add(new PatientDetails("BU_20150801","Aneurysm","multipleAneurysms","False"));
+//        patientDetails.add(new PatientDetails("BU_20150801","","MedicalHistory","N/A"));
+//        patientDetails.add(new PatientDetails("BU_20150801","","Notes","N/A"));
 //        patientInfoService.createPatientDetails(new PatientInfo("BU_20150801","UniversityHospitalMagdeburg","F","93","3DDSA","10-11-2019","","",patientDetails));
 //        //Legend Data
 //        legendDetailsService.createLegends(new LegendDetails("ruptureStatus","R","Ruptured"));
