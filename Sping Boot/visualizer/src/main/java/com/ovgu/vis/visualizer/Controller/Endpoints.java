@@ -1,33 +1,37 @@
 package com.ovgu.vis.visualizer.Controller;
 
+import com.opencsv.exceptions.CsvException;
 import com.ovgu.vis.visualizer.DAO.Request.FilterRequestBody;
 import com.ovgu.vis.visualizer.DTO.LegendList;
-import com.ovgu.vis.visualizer.Entity.LegendDetails;
+import com.ovgu.vis.visualizer.DAO.Response.Response;
+import com.ovgu.vis.visualizer.Entity.PatientInfo;
+import com.ovgu.vis.visualizer.Service.FolderScan;
 import com.ovgu.vis.visualizer.ServiceInterface.LegendDetailsService;
 import com.ovgu.vis.visualizer.ServiceInterface.PatientInfoService;
 import com.ovgu.vis.visualizer.ServiceInterface.PatientRecordService;
-import com.ovgu.vis.visualizer.Entity.PatientInfo;
+import com.ovgu.vis.visualizer.Service.ReadLegendFromCSV;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.io.IOException;
 import java.util.List;
+import com.ovgu.vis.visualizer.Service.CopyFiles;
 
 @RestController
 public class Endpoints {
 
     @Autowired
-    @Qualifier("patientInfo")
     private PatientInfoService patientInfoService;
-
     @Autowired
-    @Qualifier("legendDetails")
     private LegendDetailsService legendDetailsService;
-
     @Autowired
-    @Qualifier("patientRecords")
     private PatientRecordService patientRecordService;
+    @Autowired
+    private ReadLegendFromCSV readLegendFromCSV;
+    @Autowired
+    private FolderScan folderScan;
+    @Autowired
+    private CopyFiles copyFiles ;
 
 
     @GetMapping("/patients")
@@ -51,7 +55,7 @@ public class Endpoints {
 
     @PostMapping("/patientsRecords")
     @CrossOrigin("http://localhost:3000")
-    public ResponseEntity getPatients(@RequestBody(required = false) FilterRequestBody filterConditions) {
+    public ResponseEntity<Response> getPatients(@RequestBody FilterRequestBody filterConditions) {
         return patientRecordService.getPatients(filterConditions);
     }
 
@@ -67,10 +71,27 @@ public class Endpoints {
         legendDetailsService.deleteLegend(key,value);
     }
 
-    @PostMapping("/createLegend")
-    @CrossOrigin("http://localhost:3000")
-    public void createLegend(@RequestBody LegendDetails legendDetails){
-        legendDetailsService.createLegends(legendDetails);
+    @RequestMapping(path = "/refreshFolder", method = RequestMethod.POST)
+    public ResponseEntity refreshFolder(@RequestParam String directoryPath) throws IOException {
+        return folderScan.folderScan(directoryPath);
+//        ResponseEntity response = folderScan.folderScan(directoryPath);
+//        if(response == null)
+//        {
+//            return ResponseEntity.noContent().build();
+//        }
+//        return response;
     }
+
+    @RequestMapping(path ="/addLegend",method = RequestMethod.POST)
+    public void getLegendFromCsv(@RequestParam String directoryPath) throws IOException, CsvException {
+        readLegendFromCSV.readLegendCSV(directoryPath);
+    }
+
+    @RequestMapping(path="/copyFiles", method= RequestMethod.GET)
+    public void collect3DFiles(@RequestParam String directoryPath, @RequestParam Boolean snapshot, @RequestParam Boolean threeDImage ) throws IOException {
+        copyFiles.copy3DFiles(directoryPath,snapshot,threeDImage);
+    }
+
+
 }
 
