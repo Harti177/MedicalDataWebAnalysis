@@ -74,8 +74,8 @@ class PatientRecordServiceImpl implements PatientRecordService {
                     }
                     else{           //to be queried from patientDetails
                         if(!subQueryFixedStringAdded.get()){
-                           queryBuilder_globalVariable += "pi.patientId in ( select pd.patientId from PatientDetails pd where ";
-                           subQueryFixedStringAdded.set(true);
+                            queryBuilder_globalVariable += "pi.patientId in ( select pd.patientId from PatientDetails pd where ";
+                            subQueryFixedStringAdded.set(true);
                         }
                         String subQuery = HQLSubQueryBuilder(filter,false);
                         queryBuilder_globalVariable += "(" + subQuery + " )";
@@ -134,8 +134,8 @@ class PatientRecordServiceImpl implements PatientRecordService {
     }
 
     /*
-    * Fetch the value from legends table for the given patient details value
-    * */
+     * Fetch the value from legends table for the given patient details value
+     * */
     private List<PatientRecord> decryptLegendDetails(List<PatientDetails> patientDetails){
         List<PatientRecord> patientDetailsInRecords = new ArrayList<>();
         patientDetails.forEach(patientDetail -> {
@@ -145,8 +145,8 @@ class PatientRecordServiceImpl implements PatientRecordService {
     }
 
     /*
-    * If patient info already exists append the details to the existing patient info
-    * */
+     * If patient info already exists append the details to the existing patient info
+     * */
     private boolean patientInfoAlreadyExist (List<Patient> patients, PatientInfo currentRoot){
         AtomicBoolean exists = new AtomicBoolean(false);
         patients.forEach(patient -> {
