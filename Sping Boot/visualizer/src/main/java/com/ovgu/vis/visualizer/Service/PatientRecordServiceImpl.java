@@ -81,7 +81,8 @@ class PatientRecordServiceImpl implements PatientRecordService {
                         queryBuilder_globalVariable += "(" + subQuery + " )";
                     }
                 });
-                queryBuilder_globalVariable+= ")";
+                if(subQueryFixedStringAdded.get())
+                    queryBuilder_globalVariable+= ")";
             }
             else {
                 queryBuilder_globalVariable = "from PatientInfo pi";
