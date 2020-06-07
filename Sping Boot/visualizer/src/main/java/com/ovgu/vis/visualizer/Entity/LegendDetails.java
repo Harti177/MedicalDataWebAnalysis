@@ -26,4 +26,8 @@ public class LegendDetails {
         this.value = value;
         this.legend = legend;
     }
+
+    public String getValue() {
+        return value;
+    }
 }

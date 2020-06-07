@@ -16,12 +16,6 @@ public class DeleteItemsFromDB   {
     PatientDetailsRepository patientDetailsRepository;
 
 
-    //@Transactional
-    //public void truncateMyTable() {
-        //truncateTables.truncateMyTable();
-
-    //}
-
     public void deleteItemsFromDB() {
         patientInfoRepository.deleteAll();
         patientDetailsRepository.deleteAll();

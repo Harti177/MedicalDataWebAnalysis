@@ -37,12 +37,12 @@ public class FolderScan {
 
     @Autowired
     DeleteItemsFromDB deleteItemsFromDB;
+    @Autowired
+    ReadLegendFromCSV readLegendFromCSV;
 
     private static String threeDfile;
     private static String snapshot;
-//    private Object ResponseEntity;
-    private String outputfilepath;
-    private StringBuilder filecontent;
+
     private ArrayList<String> output = new ArrayList<>();
 
 
@@ -65,7 +65,7 @@ public class FolderScan {
         String category;
 
         int rowNumber = 0;
-        String[] a = allData.get(0);
+        String[] headers = allData.get(0);
         for (String[] row : allData.subList(1, allData.size())) {
             List<PatientDetails> patientDetails = new ArrayList<>();
 //            patientDetails.clear();
@@ -100,11 +100,11 @@ public class FolderScan {
             }
             rowNumber = rowNumber + 1;
             for (int i = 5; i <= row.length - 1; i++) {
-                if(row[i].contains("Aneurysm")){category = "Aneurysm";}
-                else if(row[i].contains("Rupture")){category = "Rupture";}
+                if(headers[i].toLowerCase().contains("aneurysm")){category = "Aneurysm";}
+                else if(headers[i].toLowerCase().contains("rupture")){category = "Rupture";}
                 else{category = "";}
                 //patientDetails.add(new PatientDetails(rowNumber, "category", a[i], row[i]));
-                patientDetails.add(new PatientDetails(row[0], category, a[i], row[i]));
+                patientDetails.add(new PatientDetails(row[0], category, headers[i], row[i]));
             }
             patientInfoService.createPatientDetails(new PatientInfo(row[0], row[1], row[4], row[3], row[2], fileCreatedDate, threeDfile, snapshot, patientDetails));
         }
@@ -119,8 +119,7 @@ public class FolderScan {
             //file created date
             BasicFileAttributes fileattr = Files.readAttributes(path, BasicFileAttributes.class);
             String fileCreatedDate = fileattr.lastModifiedTime().toString();//.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-            fileCreatedDate = fileCreatedDate.split("T")[0];
-
+            fileCreatedDate = fileCreatedDate.replace("T"," ").split("Z")[0];
 
             //read csv file
             FileReader filereader = new FileReader(path.toFile());
@@ -222,6 +221,7 @@ public class FolderScan {
     public ResponseEntity folderScan(String directoryPath) {
         try {
             deleteItemsFromDB.deleteItemsFromDB();
+            readLegendFromCSV.readLegendCSV(directoryPath);
             File[] directories = new File(directoryPath).listFiles(File::isDirectory);
             output.clear();
             output.add("patientID,Comment");
@@ -263,6 +263,10 @@ public class FolderScan {
 //            InputStreamResource resourse = new InputStreamResource(new FileInputStream(outputfilepath));
 //            HttpHeaders headers = new HttpHeaders();
 //            headers.add("Content-Disposition",String.format("attachment:filename=\"%s\"",outputfilepath.getName()));
+
+
+
+
             return ResponseEntity.status(HttpStatus.OK).body(output.size() == 1 ? null : output);
 
 //                    org.springframework.http.ResponseEntity.ok()//.headers(headers)

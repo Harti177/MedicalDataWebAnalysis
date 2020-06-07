@@ -4,6 +4,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 import com.ovgu.vis.visualizer.Entity.LegendDetails;
+import com.ovgu.vis.visualizer.Repository.LegendDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,27 +23,48 @@ import java.util.stream.Stream;
 public class ReadLegendFromCSV {
     @Autowired
     LegendDetailsServiceImpl legendDetailsService;
+    @Autowired
+    LegendDetailsRepository legendDetailsRepository;
 
 
     public void readLegendCSV(String folder) throws IOException, CsvException
     {
-        //Path testPath = Paths.get(folder);
-        Stream<Path> stream = Files.find(Paths.get(folder), 1,(path, basicFileAttributes) -> {
+
+        List<String[]> allData = new ArrayList<String[]>();
+
+        List legendFromDB = legendDetailsRepository.findAll();
+        Stream<Path> stream = Files.find(Paths.get(folder), 1, (path, basicFileAttributes) -> {
             return path.getFileName().toString().equals("legend_details.csv");
         });
-        //List a = stream.collect(Collectors.toList());
 
-        FileReader filereader =  new FileReader(stream.collect(Collectors.toList()).get(0).toFile());
-        // create csvReader object and skip first Line
+
+        FileReader filereader = new FileReader(stream.collect(Collectors.toList()).get(0).toFile());
+
         CSVReader reader = new CSVReader(filereader);
-        CSVReader csvReader = new CSVReaderBuilder(filereader).withSkipLines(1).build();
-        List<String[]> allData = csvReader.readAll();
-        for( String[] row : allData)
-        {
-            legendDetailsService.createLegends(new LegendDetails(row[0],row[1],row[2]));
+        CSVReader csvReader = new CSVReaderBuilder(filereader).build();
+        allData = csvReader.readAll();
+        if(legendFromDB.size() == 0) {
+            for (String[] row : allData) {
+                legendDetailsService.createLegends(new LegendDetails(row[0], row[1], row[2]));
 
+            }
         }
-    }
+
+        else{
+            allData.forEach(data -> {
+                AtomicBoolean available = new AtomicBoolean(false);
+                legendFromDB.forEach(legend -> {
+                    if(((LegendDetails)legend).getValue().equals(data[1]))
+                        available.set(true);
+                });
+                if(available.get() == false)
+                    legendDetailsService.createLegends(new LegendDetails(data[0], data[1], data[2]));
+            });
+//
+            }
+        }
+
+
     public void ReadLegendFromCSV(String directoryPath){
         try {
             readLegendCSV(directoryPath);

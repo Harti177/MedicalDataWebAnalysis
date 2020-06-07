@@ -12,7 +12,7 @@ public class DateConverter implements AttributeConverter<String, Timestamp> {
 
     @Override
     public String convertToEntityAttribute(Timestamp attribute) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String dateString = dateTimeFormatter.format(attribute.toLocalDateTime());
         return dateString;
 //        return new SimpleDateFormat("dd-MM-yyyy").format(attribute);
@@ -22,7 +22,7 @@ public class DateConverter implements AttributeConverter<String, Timestamp> {
     public Timestamp convertToDatabaseColumn (String dbData) {
         Date date = null;
         try {
-            date = new SimpleDateFormat("dd-MM-yyyy").parse(dbData);
+            date = new SimpleDateFormat("yyyy-MM-dd").parse(dbData);
         } catch (ParseException e) {
             e.printStackTrace();
         }

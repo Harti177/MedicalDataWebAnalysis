@@ -6,6 +6,7 @@ import com.ovgu.vis.visualizer.DTO.LegendList;
 import com.ovgu.vis.visualizer.DAO.Response.Response;
 import com.ovgu.vis.visualizer.Entity.PatientInfo;
 import com.ovgu.vis.visualizer.Service.FolderScan;
+import com.ovgu.vis.visualizer.Service.GlobalRecord;
 import com.ovgu.vis.visualizer.ServiceInterface.LegendDetailsService;
 import com.ovgu.vis.visualizer.ServiceInterface.PatientInfoService;
 import com.ovgu.vis.visualizer.ServiceInterface.PatientRecordService;
@@ -32,6 +33,8 @@ public class Endpoints {
     private FolderScan folderScan;
     @Autowired
     private CopyFiles copyFiles ;
+    @Autowired
+    private GlobalRecord globalRecord;
 
 
     @GetMapping("/patients")
@@ -82,16 +85,19 @@ public class Endpoints {
 //        return response;
     }
 
-    @RequestMapping(path ="/addLegend",method = RequestMethod.POST)
-    public void getLegendFromCsv(@RequestParam String directoryPath) throws IOException, CsvException {
-        readLegendFromCSV.readLegendCSV(directoryPath);
-    }
+    //@RequestMapping(path ="/addLegend",method = RequestMethod.POST)
+    //public void getLegendFromCsv(@RequestParam String directoryPath) throws IOException, CsvException {
+     //   readLegendFromCSV.readLegendCSV(directoryPath);
+    //}
 
     @RequestMapping(path="/copyFiles", method= RequestMethod.GET)
     public void collect3DFiles(@RequestParam String directoryPath, @RequestParam Boolean snapshot, @RequestParam Boolean threeDImage ) throws IOException {
         copyFiles.copy3DFiles(directoryPath,snapshot,threeDImage);
     }
 
-
+    @RequestMapping(path ="/globalRecord", method = RequestMethod.GET)
+    public void globalRecord(@RequestParam String directoryPath) throws IOException {
+        globalRecord.collectAllRecords(directoryPath);
+    }
 }
 

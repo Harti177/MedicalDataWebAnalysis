@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.JoinTable;
+import javax.persistence.OneToMany;
 import java.util.List;
 
 public interface PatientInfoRepository extends JpaRepository <PatientInfo, Integer> {
@@ -14,6 +16,7 @@ public interface PatientInfoRepository extends JpaRepository <PatientInfo, Integ
 
     @Query("select threeDimensionalImage from PatientInfo")
     public List<String> getThreeDImage();
+
 
 
 }
