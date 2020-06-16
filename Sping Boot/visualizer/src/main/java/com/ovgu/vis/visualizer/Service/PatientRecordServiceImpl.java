@@ -18,6 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,6 +45,16 @@ class PatientRecordServiceImpl implements PatientRecordService {
     private String startDate_globalVariable = "";
 
     private String endDate_globalVariable = "";
+
+
+    /*
+     * Get patient image given the path
+     * */
+    @Override
+    public byte[] getImage(String imagePath) throws IOException {
+        return imagePath == "" ? null : Files.readAllBytes((new File(imagePath)).toPath());
+    }
+
 
     /*
      * Get the patient record with the provided parameters and filter constraints
