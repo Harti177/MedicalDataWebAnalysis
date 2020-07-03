@@ -12,6 +12,12 @@ import java.util.List;
 import com.ovgu.vis.visualizer.Repository.PatientInfoRepository;
 
 @Service
+/* copies all threeD imagefiles/snapshotfiles/both to the given destination directory.
+* input:  directoryPath = destination path where files has to be copied
+*         snapshot = boolean(true/false)
+*         threeDImage = boolean(true/false)
+* */
+
 public class CopyFiles {
 
     @Autowired

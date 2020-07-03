@@ -30,4 +30,6 @@ public class LegendDetails {
     public String getValue() {
         return value;
     }
+    public String getKey() { return key;}
+
 }

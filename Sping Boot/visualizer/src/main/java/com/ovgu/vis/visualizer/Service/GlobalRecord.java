@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 
 @Service
+/*this creates a global record file of all the records present in the database
+input : directory path = destination path where global record has to be saved*/
 public class GlobalRecord {
     @Autowired
     PatientInfoRepository patientInfoRepository;

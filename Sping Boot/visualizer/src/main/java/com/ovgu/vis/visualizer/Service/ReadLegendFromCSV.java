@@ -40,12 +40,12 @@ public class ReadLegendFromCSV {
 
         FileReader filereader = new FileReader(stream.collect(Collectors.toList()).get(0).toFile());
 
-        CSVReader reader = new CSVReader(filereader);
-        CSVReader csvReader = new CSVReaderBuilder(filereader).build();
+        //CSVReader reader = new CSVReader(filereader);
+        CSVReader csvReader = new CSVReaderBuilder(filereader).withSkipLines(1).build();
         allData = csvReader.readAll();
         if(legendFromDB.size() == 0) {
             for (String[] row : allData) {
-                legendDetailsService.createLegends(new LegendDetails(row[0], row[1], row[2]));
+                legendDetailsService.createLegends(new LegendDetails(row[0].trim().replace(" ","").toLowerCase(), row[1].trim(), row[2].trim()));
 
             }
         }
@@ -58,7 +58,7 @@ public class ReadLegendFromCSV {
                         available.set(true);
                 });
                 if(available.get() == false)
-                    legendDetailsService.createLegends(new LegendDetails(data[0], data[1], data[2]));
+                    legendDetailsService.createLegends(new LegendDetails(data[0].trim().replace(" ","").toLowerCase(), data[1].trim(), data[2].trim()));
             });
 //
             }

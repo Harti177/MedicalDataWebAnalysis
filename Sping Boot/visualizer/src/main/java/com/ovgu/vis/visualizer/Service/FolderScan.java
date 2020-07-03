@@ -7,6 +7,7 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.exceptions.CsvException;
 import com.ovgu.vis.visualizer.Entity.PatientDetails;
 import com.ovgu.vis.visualizer.Entity.PatientInfo;
+import com.ovgu.vis.visualizer.Repository.LegendDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.io.*;
 import java.nio.file.Files;
@@ -39,6 +40,8 @@ public class FolderScan {
     DeleteItemsFromDB deleteItemsFromDB;
     @Autowired
     ReadLegendFromCSV readLegendFromCSV;
+    @Autowired
+    LegendDetailsRepository legendDetailsRepository;
 
     private static String threeDfile;
     private static String snapshot;
@@ -63,6 +66,8 @@ public class FolderScan {
         snapshot = null;
         threeDfile = null;
         String category;
+        List legendValues = new ArrayList();
+        List legendKeys = new ArrayList();
 
         int rowNumber = 0;
         String[] headers = allData.get(0);
@@ -104,9 +109,18 @@ public class FolderScan {
                 else if(headers[i].toLowerCase().contains("rupture")){category = "Rupture";}
                 else{category = "";}
                 //patientDetails.add(new PatientDetails(rowNumber, "category", a[i], row[i]));
-                patientDetails.add(new PatientDetails(row[0], category, headers[i], row[i]));
+                //patientDetails.add(new PatientDetails(patient id, category, key(header), value));
+                legendDetailsRepository.findAll().forEach(a->legendValues.add(a.getValue()));
+                legendDetailsRepository.findAll().forEach(a->legendKeys.add(a.getKey()));
+                if((legendKeys.contains(headers[i].trim().replace(" ", "").toLowerCase())) && (legendValues.contains(row[i].trim()))) {
+                    patientDetails.add(new PatientDetails(row[0].trim(), category, headers[i].trim().replace(" ", "").toLowerCase(), row[i].trim()));
+                }
+                else if(legendKeys.contains(headers[i].trim().replace(" ", "").toLowerCase())){
+                    output.add(row[0]+","+row[i]+" Legend value is not present in database");
+                }
             }
-            patientInfoService.createPatientDetails(new PatientInfo(row[0], row[1], row[4], row[3], row[2], fileCreatedDate, threeDfile, snapshot, patientDetails));
+            //patientInfoService.createPatientDetails(new PatientInfo(patient id, institution , sex , age , modality, fileCreatedDate, threeDfile, snapshot, patientDetails));
+            patientInfoService.createPatientDetails(new PatientInfo(row[0].trim(), row[1].trim().replace(" ",""), row[4].trim(), row[3].trim(), row[2].trim(), fileCreatedDate, threeDfile, snapshot, patientDetails));
         }
 
     }
@@ -116,14 +130,14 @@ public class FolderScan {
     public void readCSV(Path path, File file) {
         try {
             List<String[]> allData = null;
-            //file created date
+            //retrieve file created date
             BasicFileAttributes fileattr = Files.readAttributes(path, BasicFileAttributes.class);
             String fileCreatedDate = fileattr.lastModifiedTime().toString();//.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
             fileCreatedDate = fileCreatedDate.replace("T"," ").split("Z")[0];
 
             //read csv file
             FileReader filereader = new FileReader(path.toFile());
-            // create csvReader object and skip first Line
+
             try {
                 CSVParser csvParser = new CSVParserBuilder().withSeparator(',').build();
                 CSVReader csvReader = new CSVReaderBuilder(filereader).withCSVParser(csvParser).build();
@@ -133,7 +147,7 @@ public class FolderScan {
             catch (IOException eee)
             {
                 try {
-                    // try the other valid delimeter
+                    // try the other valid delimiter
                     CSVParser csvParser = new CSVParserBuilder().withSeparator(';').build();
                     CSVReader csvReader = new CSVReaderBuilder(filereader).withCSVParser(csvParser).build();
                     allData = csvReader.readAll();
@@ -159,8 +173,8 @@ public class FolderScan {
 
     }
 
-
-        public Stream<Path> threeDObjectFile(File folder, String patientId) throws IOException {
+    //retrieve 3Dobject file path
+    public Stream<Path> threeDObjectFile(File folder, String patientId) throws IOException {
         Path testPath = folder.toPath();
         //finding files containing '.stl' and '.obj' in name
         Stream<Path> stream = Files.find(testPath, 100, (path, basicFileAttributes) -> {
@@ -171,6 +185,7 @@ public class FolderScan {
         return stream;
     }
 
+    //retrieve snapshot file path
     public Stream<Path> snapshotFile(File folder, String patientId) throws IOException {
         Path testPath = folder.toPath();
         //finding files containing '.stl' and '.obj' in name
