@@ -2,9 +2,13 @@ package com.ovgu.vis.visualizer.Service;
 
 import com.ovgu.vis.visualizer.DAO.Request.Filter;
 import com.ovgu.vis.visualizer.DAO.Request.FilterRequestBody;
+import com.ovgu.vis.visualizer.DAO.Request.VisualizationOptions;
 import com.ovgu.vis.visualizer.DAO.Response.PatientRecord;
 import com.ovgu.vis.visualizer.DAO.Response.Patient;
 import com.ovgu.vis.visualizer.DAO.Response.Response;
+import com.ovgu.vis.visualizer.DAO.Response.Visualization;
+import com.ovgu.vis.visualizer.DAO.Visualization.PatientRecordSpread;
+import com.ovgu.vis.visualizer.Repository.PatientDetailsRepository;
 import com.ovgu.vis.visualizer.ServiceInterface.PatientRecordService;
 import com.ovgu.vis.visualizer.Entity.PatientDetails;
 import com.ovgu.vis.visualizer.Entity.PatientInfo;
@@ -21,9 +25,9 @@ import javax.persistence.EntityManager;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
@@ -35,6 +39,8 @@ class PatientRecordServiceImpl implements PatientRecordService {
     private PatientInfoRepository patientInfoRepository;
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private PatientDetailsRepository patientDetailsRepository;
 
     private String queryBuilder_globalVariable = "";
 
@@ -119,31 +125,161 @@ class PatientRecordServiceImpl implements PatientRecordService {
             int pageNumber = conditions.getPageInfo().getPageNumber();
             int recordsPerPage = conditions.getPageInfo().getNumberOfRecordsPerPage();
 
+
+            List patientInfoCollection = null;
             //Main query
-            List patientInfoCollection = dateInFiltering_globalVariable
-                    ?
-                    session.createQuery(queryBuilder_globalVariable).setFirstResult((pageNumber-1)*recordsPerPage).setMaxResults(recordsPerPage)
-                            .setParameter("startDate",startDate_globalVariable).setParameter("endDate",endDate_globalVariable).list()   //if date is contained in query
-                    :
-                    session.createQuery(queryBuilder_globalVariable).setFirstResult((pageNumber-1)*recordsPerPage).setMaxResults(recordsPerPage).list();
-
+            if(!conditions.isVisualize()){
+                patientInfoCollection = dateInFiltering_globalVariable
+                        ?
+                        session.createQuery(queryBuilder_globalVariable).setFirstResult((pageNumber-1)*recordsPerPage).setMaxResults(recordsPerPage)
+                                .setParameter("startDate",startDate_globalVariable).setParameter("endDate",endDate_globalVariable).list()   //if date is contained in query
+                        :
+                        session.createQuery(queryBuilder_globalVariable).setFirstResult((pageNumber-1)*recordsPerPage).setMaxResults(recordsPerPage).list();
+            }
+            else {
+                patientInfoCollection = dateInFiltering_globalVariable
+                        ?
+                        session.createQuery(queryBuilder_globalVariable)
+                                .setParameter("startDate",startDate_globalVariable).setParameter("endDate",endDate_globalVariable).list()   //if date is contained in query
+                        :
+                        session.createQuery(queryBuilder_globalVariable).list();
+            }
             //fetching Legend details for each attribute
-            List<Patient> patients = new ArrayList<>();
-            patientInfoCollection.forEach(patientInfo -> {
-                Boolean rootExists = patientInfoAlreadyExist(patients,(PatientInfo) patientInfo);
-                if(!rootExists){
-                    List<PatientRecord> patientDetailsInRecords = decryptLegendDetails(((PatientInfo)patientInfo).getPatientDetails());
-                    patients.add(new Patient(((PatientInfo)patientInfo).getPatientId(),((PatientInfo)patientInfo).getInstitute(),
-                            ((PatientInfo)patientInfo).getSex(),((PatientInfo)patientInfo).getAge(),((PatientInfo)patientInfo).getModality(), ((PatientInfo)patientInfo).getDateOfCreation(),
-                            ((PatientInfo)patientInfo).getThreeDimensionalImage(),((PatientInfo)patientInfo).getSnapshot(),patientDetailsInRecords));
-                }
-            });
+            if(!conditions.isVisualize()){
+                List<Patient> patients = new ArrayList<>();
+                patientInfoCollection.forEach(patientInfo -> {
+                    Boolean rootExists = patientInfoAlreadyExist(patients,(PatientInfo) patientInfo);
+                    if(!rootExists){
+                        List<PatientRecord> patientDetailsInRecords = decryptLegendDetails(((PatientInfo)patientInfo).getPatientDetails());
+                        patients.add(new Patient(((PatientInfo)patientInfo).getPatientId(),((PatientInfo)patientInfo).getInstitute(),
+                                ((PatientInfo)patientInfo).getSex(),((PatientInfo)patientInfo).getAge(),((PatientInfo)patientInfo).getModality(), ((PatientInfo)patientInfo).getDateOfCreation(),
+                                ((PatientInfo)patientInfo).getThreeDimensionalImage(),((PatientInfo)patientInfo).getSnapshot(),patientDetailsInRecords));
+                    }
+                });
 
-            return ResponseEntity.status(HttpStatus.OK).body(new Response(totalEntries,conditions.getPageInfo().getPageNumber(), (int) Math.ceil((double)totalEntries/conditions.getPageInfo().getNumberOfRecordsPerPage()),
-                    conditions.getPageInfo().getNumberOfRecordsPerPage(),patients));
+                return ResponseEntity.status(HttpStatus.OK).body(new Response(totalEntries,conditions.getPageInfo().getPageNumber(), (int) Math.ceil((double)totalEntries/conditions.getPageInfo().getNumberOfRecordsPerPage()),
+                        conditions.getPageInfo().getNumberOfRecordsPerPage(),patients));
+            }
+            else{
+                List<PatientRecordSpread> patientRecordSpreadList = new ArrayList<>();
+                patientInfoCollection.forEach(patientInfo -> {
+                    List<PatientRecord> patientDetailsInRecords = decryptLegendDetails(((PatientInfo) patientInfo).getPatientDetails());
+                        patientRecordSpreadList.add(new PatientRecordSpread(((PatientInfo)patientInfo).getPatientId(),((PatientInfo)patientInfo).getInstitute(),
+                                ((PatientInfo)patientInfo).getSex(),((PatientInfo)patientInfo).getAge(),patientDetailsInRecords));
+                });
+                Visualization visualizationData = visualizationDataGenerator(conditions.getVisualizationOptions(),patientRecordSpreadList, patientInfoCollection); //for visualisation
+                return ResponseEntity.status(HttpStatus.OK).body(visualizationData);
+            }
         }
         catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getCause().getMessage());
+        }
+    }
+
+    /*
+     * To fetch visualization data
+     * */
+    private Visualization visualizationDataGenerator(VisualizationOptions visualizationOptions, List patientInfoCollection_spread, List patientInfoCollection ) {
+        List xAxis = new ArrayList(), yAxis = new ArrayList(), target = new ArrayList(), target_additional = new ArrayList();
+        Visualization visualizationData = new Visualization();
+        if(visualizationOptions.getXAxis() != ""){
+            xAxis = fetchUniqueData(visualizationOptions.getXAxis());
+        }
+        if(visualizationOptions.getTarget() != ""){
+            target = fetchUniqueData(visualizationOptions.getTarget());
+        }
+        else {
+            target.add("dummy");
+        }
+        if(visualizationOptions.getTargetAdditional() != ""){
+            target_additional = fetchUniqueData(visualizationOptions.getTargetAdditional());
+        }
+        else {
+            target_additional.add("dummy");
+        }
+        if(visualizationOptions.getYAxis() != ""){
+            yAxis = fetchUniqueData(visualizationOptions.getYAxis());
+        }
+        List finalTarget = target;
+        List finalXAxis = xAxis;
+        List finalYAxis = yAxis;
+//        if(visualizationOptions.getTarget() == "" && visualizationOptions.getTargetAdditional() == "" &&
+//                (visualizationOptions.getXAxis().equals("sex") || visualizationOptions.getXAxis().equals("age") || visualizationOptions.getXAxis().equals("institute"))){
+//            finalXAxis.forEach(xLabel -> {
+//                AtomicInteger count = new AtomicInteger();
+//                patientInfoCollection.forEach(patientInfo -> {
+//                    PatientInfo patient = (PatientInfo) patientInfo;
+//                    if((patient.getAge().equals(xLabel) && visualizationOptions.getXAxis().equals("age"))  || (patient.getInstitute().equals(xLabel) && visualizationOptions.getXAxis().equals("institute"))
+//                            || (patient.getSex().equals(xLabel) && visualizationOptions.getXAxis().equals("sex"))) {
+//                        count.getAndIncrement();
+//                    }
+//                });
+//                List labels = new ArrayList();
+//                List data = new ArrayList();
+//                labels.add(xLabel);
+//                data.add(count);
+//                visualizationData.setVisualizationData(labels, data);
+//            });
+//        }
+//        else {
+
+        target_additional.forEach(outerTargetData -> {
+            finalTarget.forEach(innerTargetData -> {
+                finalXAxis.forEach(xLabel -> {
+                    AtomicInteger count = new AtomicInteger();
+                    patientInfoCollection_spread.forEach(patientInfo -> {
+                        PatientRecordSpread patient = (PatientRecordSpread) patientInfo;
+                        if (containDetails((String) xLabel, "", (String) innerTargetData, (String) outerTargetData,
+                                visualizationOptions.getXAxis(), visualizationOptions.getYAxis(), visualizationOptions.getTarget(), visualizationOptions.getTargetAdditional(), patient)) {
+                            System.out.println("hi");
+                            count.getAndIncrement();
+                        }
+                    });
+                    List labels = new ArrayList();
+                    List data = new ArrayList();
+                    if (!outerTargetData.equals("dummy")) {
+                        labels.add(outerTargetData);
+                    }
+                    if (!innerTargetData.equals("dummy")) {
+                        labels.add(innerTargetData);
+                    }
+                    labels.add(xLabel);
+                    data.add(count);
+                    visualizationData.setVisualizationData(labels, data);
+                });
+            });
+        });
+//        }
+        return visualizationData;
+    }
+
+
+    private Boolean containDetails(String xLabel, String yAxis, String innerTargetData, String outerTargetData,
+                                   String xLabelType, String yLabelType, String innerTargetType, String outerTargetType, PatientRecordSpread patient){
+        return (
+                (patient.getValue(xLabelType).equals(xLabel))
+                        &&
+                        (innerTargetData.equals("dummy") || (!innerTargetData.equals("dummy") && patient.getValue(innerTargetType).equals(innerTargetData)))
+                        &&
+                        (outerTargetData.equals("dummy") || (!outerTargetData.equals("dummy") && patient.getValue(outerTargetType).equals(outerTargetData)))
+        );
+    }
+
+    /*
+     * Return "set" of data specified in the field name
+     * */
+    private List fetchUniqueData(String fieldName){
+        if(fieldName.toLowerCase().equals("age")){
+            return patientInfoRepository.getUniqueAge();
+        }
+        else if(fieldName.toLowerCase().equals("institute")){
+            return patientInfoRepository.getUniqueInstitutes();
+        }
+        else if(fieldName.toLowerCase().equals("sex")){
+            return patientInfoRepository.getUniqueSex();
+        }
+        else{
+            return legendDetailsRepository.getUniqueLegendValue(fieldName);
         }
     }
 

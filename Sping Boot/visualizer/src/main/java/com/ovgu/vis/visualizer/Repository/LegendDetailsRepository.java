@@ -31,4 +31,8 @@ public interface LegendDetailsRepository extends JpaRepository<LegendDetails,Int
     @Modifying
     @Query ("delete from LegendDetails where key = :key and value = :value")
     public void deleteLegend(String key, String value);
+
+    @Query("Select distinct (legend) from LegendDetails where key= :key")
+    public List<String> getUniqueLegendValue(String key);
+
 }

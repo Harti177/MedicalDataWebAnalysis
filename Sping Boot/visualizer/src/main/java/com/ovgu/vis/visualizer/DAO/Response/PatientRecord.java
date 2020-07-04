@@ -19,4 +19,12 @@ public class PatientRecord {
     }
 
     public PatientRecord() { }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

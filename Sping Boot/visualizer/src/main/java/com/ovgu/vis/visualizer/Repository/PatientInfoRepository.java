@@ -17,6 +17,12 @@ public interface PatientInfoRepository extends JpaRepository <PatientInfo, Integ
     @Query("select threeDimensionalImage from PatientInfo")
     public List<String> getThreeDImage();
 
+    @Query("select distinct (age) from PatientInfo")
+    public List<String> getUniqueAge();
 
+    @Query("select distinct (institute) from PatientInfo")
+    public List<String> getUniqueInstitutes();
 
+    @Query("select distinct (sex) from PatientInfo")
+    public List<String> getUniqueSex();
 }

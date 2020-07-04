@@ -16,6 +16,8 @@ public class FilterRequestBody {
 
     private boolean toVisualize;
 
+    private VisualizationOptions visualizationOptions;
+
     /*
     * Getters for all attributes
     * */
@@ -31,7 +33,11 @@ public class FilterRequestBody {
         return pageInfo;
     }
 
-    public boolean isToVisualize() {
+    public boolean isVisualize() {
         return toVisualize;
+    }
+
+    public VisualizationOptions getVisualizationOptions() {
+        return visualizationOptions;
     }
 }
