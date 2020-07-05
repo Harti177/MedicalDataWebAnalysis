@@ -203,26 +203,6 @@ class PatientRecordServiceImpl implements PatientRecordService {
         List finalTarget = target;
         List finalXAxis = xAxis;
         List finalYAxis = yAxis;
-//        if(visualizationOptions.getTarget() == "" && visualizationOptions.getTargetAdditional() == "" &&
-//                (visualizationOptions.getXAxis().equals("sex") || visualizationOptions.getXAxis().equals("age") || visualizationOptions.getXAxis().equals("institute"))){
-//            finalXAxis.forEach(xLabel -> {
-//                AtomicInteger count = new AtomicInteger();
-//                patientInfoCollection.forEach(patientInfo -> {
-//                    PatientInfo patient = (PatientInfo) patientInfo;
-//                    if((patient.getAge().equals(xLabel) && visualizationOptions.getXAxis().equals("age"))  || (patient.getInstitute().equals(xLabel) && visualizationOptions.getXAxis().equals("institute"))
-//                            || (patient.getSex().equals(xLabel) && visualizationOptions.getXAxis().equals("sex"))) {
-//                        count.getAndIncrement();
-//                    }
-//                });
-//                List labels = new ArrayList();
-//                List data = new ArrayList();
-//                labels.add(xLabel);
-//                data.add(count);
-//                visualizationData.setVisualizationData(labels, data);
-//            });
-//        }
-//        else {
-
         target_additional.forEach(outerTargetData -> {
             finalTarget.forEach(innerTargetData -> {
                 finalXAxis.forEach(xLabel -> {
@@ -249,6 +229,13 @@ class PatientRecordServiceImpl implements PatientRecordService {
                 });
             });
         });
+        if (!target_additional.get(0).equals("dummy")) {
+            visualizationData.setTargetAdditional(target_additional);
+        }
+        if (!target.get(0).equals("dummy")) {
+            visualizationData.setTarget(target);
+        }
+        visualizationData.setxAxis(xAxis);
 //        }
         return visualizationData;
     }
