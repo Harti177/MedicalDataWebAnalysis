@@ -244,11 +244,11 @@ class PatientRecordServiceImpl implements PatientRecordService {
     private Boolean containDetails(String xLabel, String yAxis, String innerTargetData, String outerTargetData,
                                    String xLabelType, String yLabelType, String innerTargetType, String outerTargetType, PatientRecordSpread patient){
         return (
-                (patient.getValue(xLabelType).equals(xLabel))
+                (patient.getValue(xLabelType) != null && patient.getValue(xLabelType).equals(xLabel))
                         &&
-                        (innerTargetData.equals("dummy") || (!innerTargetData.equals("dummy") && patient.getValue(innerTargetType).equals(innerTargetData)))
+                        (innerTargetData.equals("dummy") || (!innerTargetData.equals("dummy") && patient.getValue(innerTargetType) != null && patient.getValue(innerTargetType).equals(innerTargetData)))
                         &&
-                        (outerTargetData.equals("dummy") || (!outerTargetData.equals("dummy") && patient.getValue(outerTargetType).equals(outerTargetData)))
+                        (outerTargetData.equals("dummy") || (!outerTargetData.equals("dummy") && patient.getValue(outerTargetType) != null && patient.getValue(outerTargetType).equals(outerTargetData)))
         );
     }
 
